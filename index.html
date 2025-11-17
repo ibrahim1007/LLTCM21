@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalkulator Risiko Trading Pro</title>
+    <!-- Memuat Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Memuat font Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Mengatur font default ke Inter */
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        /* Style untuk input readonly */
+        input:read-only, input:disabled {
+            background-color: #f4f5f7; /* bg-gray-100 */
+            cursor: not-allowed;
+            color: #6b7280; /* text-gray-500 */
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900 min-h-screen">
+
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-gray-200">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div class="flex items-center gap-3">
+                <!-- Ikon Sederhana -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-800" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M12 8h.01M15 8h.01M15 14h.01M12 17h.01M15 17h.01M4 7h16a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V8a1 1 0 011-1z" />
+                </svg>
+                <h1 class="text-2xl font-bold text-gray-900">
+                    Kalkulator Risiko Trading
+                </h1>
+            </div>
+        </div>
+    </header>
+
+    <!-- Konten Utama: Grid Layout -->
+    <div class="container mx-auto p-4 sm:px-6 lg:px-8 mt-6">
+        <div class="grid grid-cols-1 lg:grid-cols-3 lg:gap-8">
+
+            <!-- Kolom Kiri: Kalkulator -->
+            <main class="lg:col-span-2 space-y-6">
+                <!-- Form Input dan Perhitungan -->
+                <form id="trade-form" class="bg-white p-6 md:p-8 rounded-xl shadow-lg border border-gray-200 space-y-6">
+                    
+                    <h2 class="text-xl font-semibold text-gray-800 border-b border-gray-200 pb-3">Input Data Trade</h2>
+
+                    <!-- Baris 1: Modal & Pair -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="modal" class="block text-sm font-medium text-gray-700 mb-1">Modal (USD)</label>
+                            <input type="number" id="modal" name="modal" required placeholder="Contoh: 1000"
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500">
+                        </div>
+                        <div>
+                            <label for="pair" class="block text-sm font-medium text-gray-700 mb-1">Trading Pair</label>
+                            <select id="pair" name="pair" required
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500">
+                                <option value="XAUUSD">XAUUSD</option>
+                                <option value="NASDAQ">NASDAQ</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Baris 2: Tipe, Entry, SL -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                            <label for="trade-type" class="block text-sm font-medium text-gray-700 mb-1">Tipe Trade</label>
+                            <select id="trade-type" name="trade-type" required
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500">
+                                <option value="BUY">BUY</option>
+                                <option value="SELL">SELL</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="entry-price" class="block text-sm font-medium text-gray-700 mb-1">Entry Price</label>
+                            <input type="number" id="entry-price" name="entry-price" step="any" required placeholder="Harga masuk"
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500">
+                        </div>
+                        <div>
+                            <label for="sl-price" class="block text-sm font-medium text-gray-700 mb-1">Stop Loss Price</label>
+                            <input type="number" id="sl-price" name="sl-price" step="any" required placeholder="Harga SL"
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500">
+                        </div>
+                    </div>
+
+                    <!-- Hasil Perhitungan Otomatis -->
+                    <div id="results-section" class="pt-6 border-t border-gray-200 space-y-4">
+                        <h3 class="text-lg font-semibold text-gray-800">Hasil Perhitungan (RR 1:2)</h3>
+                        
+                        <!-- TP Price (Otomatis) -->
+                        <div>
+                            <label for="tp-price" class="block text-sm font-medium text-gray-700 mb-1">Take Profit Price (Otomatis)</label>
+                            <input type="text" id="tp-price" name="tp-price" readonly
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                        </div>
+                        
+                        <!-- Hasil Kalkulasi -->
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            <!-- Jarak SL -->
+                            <div class="bg-gray-100 p-4 rounded-lg border border-gray-200">
+                                <span class="block text-sm text-gray-600">Jarak SL</span>
+                                <span id="jarak-sl" class="text-lg font-semibold text-gray-900">- pips</span>
+                                <span id="status-sl" class="block text-sm font-medium text-gray-700">OK</span>
+                            </div>
+                            <!-- Risk per Trade (0.6%) -->
+                            <div class="bg-gray-100 p-4 rounded-lg border border-gray-200">
+                                <span class="block text-sm text-gray-600">Risk (0.6%)</span>
+                                <span id="risk-amount" class="text-lg font-semibold text-gray-900">$0.00</span>
+                            </div>
+                            <!-- Lot Size -->
+                            <div class="bg-gray-100 p-4 rounded-lg border border-gray-200">
+                                <span class="block text-sm text-gray-600">Lot Size</span>
+                                <span id="lot-size" class="text-lg font-semibold text-gray-900">- lots</span>
+                            </div>
+                            <!-- Potensi Rugi -->
+                            <div class="bg-gray-100 p-4 rounded-lg border border-gray-200 col-span-2 md:col-span-1">
+                                <span class="block text-sm text-gray-600">Potensi Rugi</span>
+                                <span id="potential-loss" class="text-lg font-semibold text-gray-600">$0.00</span>
+                            </div>
+                            <!-- Potensi Profit -->
+                            <div class="bg-gray-100 p-4 rounded-lg border border-gray-200">
+                                <span class="block text-sm text-gray-600">Potensi Profit (RR 1:2)</span>
+                                <span id="potential-profit" class="text-lg font-semibold text-gray-900">$0.00</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tombol Aksi -->
+                    <div class="flex gap-4 pt-6 border-t border-gray-200">
+                        <button type="reset" id="btn-batal"
+                                class="w-1/2 py-3 px-4 rounded-lg text-gray-700 font-medium bg-gray-200 hover:bg-gray-300 transition duration-300">
+                            Batal
+                        </button>
+                        <button type="submit" id="btn-selesai"
+                                class="w-1/2 py-3 px-4 rounded-lg text-white font-medium bg-gray-800 hover:bg-gray-900 disabled:bg-gray-400 disabled:cursor-not-allowed transition duration-300">
+                            Simpan ke History
+                        </button>
+                    </div>
+                </form>
+            </main>
+
+            <!-- Kolom Kanan: Analisis & History -->
+            <aside class="lg:col-span-1 space-y-6 mt-6 lg:mt-0">
+                
+                <!-- Panel History -->
+                <section id="history-card" class="bg-white p-6 md:p-8 rounded-xl shadow-lg border border-gray-200">
+                    <div class="flex items-center gap-3 border-b border-gray-200 pb-3 mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-800" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <h2 class="text-xl font-semibold text-gray-800">History Trade</h2>
+                    </div>
+                    <div id="history-list" class="space-y-4 max-h-[600px] overflow-y-auto pr-2">
+                        <p id="empty-history" class="text-center text-gray-500 py-4">Belum ada data trade.</p>
+                        <!-- Data history akan ditambahkan di sini oleh JavaScript -->
+                    </div>
+                </section>
+
+                <!-- Panel Analisis (BARU) -->
+                <section class="bg-white p-6 md:p-8 rounded-xl shadow-lg border border-gray-200">
+                    <div class="flex items-center gap-3 border-b border-gray-200 pb-3 mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-800" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0h6" />
+                        </svg>
+                        <h2 class="text-xl font-semibold text-gray-800">Analisis Performa</h2>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <!-- Probabilitas Profit -->
+                        <div class="flex justify-between items-center bg-gray-100 p-4 rounded-lg">
+                            <span class="text-sm font-medium text-gray-700">Probabilitas Profit</span>
+                            <span id="win-rate" class="text-2xl font-bold text-gray-900">0.0%</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4 text-center">
+                            <div class="bg-gray-50 p-3 rounded-lg">
+                                <span class="block text-xs text-gray-500">Total Trades</span>
+                                <span id="total-trades" class="text-lg font-semibold">0</span>
+                            </div>
+                            <div class="bg-gray-50 p-3 rounded-lg">
+                                <span class="block text-xs text-gray-500">W / L</span>
+                                <span id="win-loss-ratio" class="text-lg font-semibold">0 / 0</span>
+                            </div>
+                        </div>
+
+                        <!-- Rugi Tertinggi -->
+                        <div class="flex justify-between items-center pt-4 border-t">
+                            <span class="text-sm font-medium text-gray-700">Rugi Tertinggi</span>
+                            <span id="max-loss" class="text-lg font-semibold text-gray-600">$0.00</span>
+                        </div>
+
+                        <!-- Profit Tertinggi -->
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-medium text-gray-700">Profit Tertinggi</span>
+                            <span id="max-profit" class="text-lg font-semibold text-gray-900">$0.00</span>
+                        </div>
+                    </div>
+                </section>
+            </aside>
+
+        </div>
+    </div>
+
+    <!-- Modal Peringatan SL (BARU) -->
+    <div id="sl-warning-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 hidden">
+        <!-- Overlay untuk menutup modal saat diklik di luar -->
+        <div id="sl-modal-overlay" class="absolute inset-0"></div>
+        
+        <div class="bg-white rounded-lg shadow-xl p-6 md:p-8 w-11/12 max-w-md z-10 mx-auto">
+            <div class="flex items-start justify-between">
+                <div class="flex items-center gap-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-800" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <h3 class="text-xl font-semibold text-gray-900">Peringatan Stop Loss</h3>
+                </div>
+                <button id="sl-modal-close" class="text-gray-400 hover:text-gray-600 text-3xl leading-none">&times;</button>
+            </div>
+            <div class="mt-4 space-y-3">
+                <p id="sl-modal-message" class="text-gray-700">Batas SL terlampaui.</p>
+                <p class="text-gray-900 font-semibold text-lg">
+                    SL Price disarankan: <span id="sl-modal-suggestion" class="text-gray-900 font-bold">-</span>
+                </p>
+            </div>
+            <!-- Mengubah div ini untuk menampung 2 tombol dengan flexbox -->
+            <div class="mt-6 flex justify-end gap-3">
+                <button id="sl-modal-ok" class="py-2 px-5 rounded-lg text-gray-700 font-medium bg-gray-200 hover:bg-gray-300 transition duration-300">
+                    Mengerti
+                </button>
+                <button id="sl-modal-apply" class="py-2 px-5 rounded-lg text-white font-medium bg-gray-800 hover:bg-gray-900 transition duration-300">
+                    Terapkan
+                </button>
+            </div>
+        </div>
+    </div>
+    <!-- Akhir Modal -->
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            // --- Konstanta ---
+            const RISK_PERCENT = 0.006; // 0.6%
+            // MAX_SL_PIPS dihapus, sekarang dinamis
+            const RR_RATIO = 2; // 1:2
+
+            // --- Database Sederhana ---
+            let tradeHistory = []; // Array untuk menyimpan semua data trade
+            let currentCalcData = {}; // Menyimpan data kalkulasi terakhir
+
+            // --- Elemen Form ---
+            const form = document.getElementById('trade-form');
+            const modalInput = document.getElementById('modal');
+            const pairInput = document.getElementById('pair');
+            const tradeTypeInput = document.getElementById('trade-type');
+            const entryPriceInput = document.getElementById('entry-price');
+            const slPriceInput = document.getElementById('sl-price');
+
+            // --- Elemen Hasil Kalkulasi ---
+            const tpPriceDisplay = document.getElementById('tp-price');
+            const jarakSlDisplay = document.getElementById('jarak-sl');
+            const statusSlDisplay = document.getElementById('status-sl');
+            const riskAmountDisplay = document.getElementById('risk-amount');
+            const lotSizeDisplay = document.getElementById('lot-size');
+            const potentialLossDisplay = document.getElementById('potential-loss');
+            const potentialProfitDisplay = document.getElementById('potential-profit');
+            const btnSelesai = document.getElementById('btn-selesai');
+
+            // --- Elemen History ---
+            const historyList = document.getElementById('history-list');
+            const emptyHistoryMsg = document.getElementById('empty-history');
+
+            // --- Elemen Analisis ---
+            const winRateDisplay = document.getElementById('win-rate');
+            const totalTradesDisplay = document.getElementById('total-trades');
+            const winLossRatioDisplay = document.getElementById('win-loss-ratio');
+            const maxLossDisplay = document.getElementById('max-loss');
+            const maxProfitDisplay = document.getElementById('max-profit');
+
+            // --- Elemen Modal (BARU) ---
+            const slWarningModal = document.getElementById('sl-warning-modal');
+            const slModalOverlay = document.getElementById('sl-modal-overlay');
+            const slModalCloseBtn = document.getElementById('sl-modal-close');
+            const slModalOkBtn = document.getElementById('sl-modal-ok');
+            const slModalApplyBtn = document.getElementById('sl-modal-apply'); // BARU
+            const slModalMessage = document.getElementById('sl-modal-message');
+            const slModalSuggestion = document.getElementById('sl-modal-suggestion');
+
+            // --- Event Listener ---
+            const inputsToWatch = [modalInput, pairInput, tradeTypeInput, entryPriceInput, slPriceInput];
+            inputsToWatch.forEach(input => {
+                input.addEventListener('input', handleCalculation);
+            });
+
+            // (BARU) Event listener terpisah HANYA untuk pop-up SL (aktif saat fokus hilang)
+            slPriceInput.addEventListener('change', handleSlPriceChange);
+
+            form.addEventListener('submit', handleSubmit);
+            form.addEventListener('reset', handleReset);
+
+            // Event listener untuk tombol Win/Loss di history
+            historyList.addEventListener('click', handleHistoryAction);
+            // Modal Listeners
+            slModalCloseBtn.addEventListener('click', hideSlWarningModal);
+            slModalOkBtn.addEventListener('click', hideSlWarningModal);
+            slModalOverlay.addEventListener('click', hideSlWarningModal);
+            slModalApplyBtn.addEventListener('click', handleApplySuggestedSl); // BARU
+
+            // --- Fungsi Kalkulasi Utama (Pure Function) ---
+            function calculateRiskData() {
+                const modal = parseFloat(modalInput.value) || 0;
+                const pair = pairInput.value;
+                const tradeType = tradeTypeInput.value;
+                const entryPrice = parseFloat(entryPriceInput.value) || 0;
+                const slPrice = parseFloat(slPriceInput.value) || 0;
+
+                let result = {
+                    isSlValid: false,
+                    tpPrice: "",
+                    jarakPips: "- pips",
+                    statusText: "-",
+                    statusClass: "text-gray-500",
+                    riskAmount: "$0.00",
+                    lotSize: "- lots",
+                    potentialLoss: "$0.00",
+                    potentialProfit: "$0.00",
+                    rawRisk: 0,
+                    rawReward: 0,
+                    limitExceeded: false, // BARU
+                    suggestedSl: 0,     // BARU
+                    maxPips: 0,         // BARU
+                    decimals: 2         // BARU
+                };
+
+                if (modal === 0 || entryPrice === 0 || slPrice === 0) {
+                    return result; // Kembalikan data default
+                }
+
+                // --- Logika Pair Dinamis (BARU) ---
+                let maxPips, pipMultiplier, pipValuePerLot, decimals;
+                if (pair === 'XAUUSD') {
+                    maxPips = 300;
+                    pipMultiplier = 10;
+                    pipValuePerLot = 10;
+                    decimals = 2;
+                } else if (pair === 'NASDAQ') {
+                    maxPips = 3000;
+                    pipMultiplier = 1;
+                    pipValuePerLot = 1;
+                    decimals = 1;
+                }
+                result.maxPips = maxPips;
+                result.decimals = decimals;
+                // --- Akhir Logika Pair ---
+                
+                if ((tradeType === 'BUY' && slPrice >= entryPrice) || (tradeType === 'SELL' && slPrice <= entryPrice)) {
+                    result.statusText = "SL Price salah";
+                    result.statusClass = "text-gray-600";
+                    return result; // SL tidak valid
+                }
+
+                // 1. Hitung Jarak SL & Pips
+                const jarakPoin = Math.abs(entryPrice - slPrice);
+                let jarakPips = jarakPoin * pipMultiplier;
+                result.jarakPips = `${jarakPips.toFixed(1)} pips`;
+
+                // 2. Cek Max SL (Logika Diubah)
+                const maxPoin = maxPips / pipMultiplier;
+
+                if (jarakPips > maxPips) {
+                    // KASUS: SL MELEBIHI BATAS
+                    result.isSlValid = false;
+                    result.limitExceeded = true; // Tandai untuk pop-up
+                    result.statusText = `SL > ${maxPips} pips!`;
+                    result.statusClass = "text-gray-600";
+                    
+                    // Hitung SL yang disarankan
+                    if (tradeType === 'BUY') {
+                        result.suggestedSl = entryPrice - maxPoin;
+                    } else {
+                        result.suggestedSl = entryPrice + maxPoin;
+                    }
+                    result.tpPrice = "-"; // Kosongkan TP
+                    result.lotSize = "- lots";
+                    result.potentialLoss = "$0.00";
+                    result.potentialProfit = "$0.00";
+                    
+                    // Hitung risk amount (tetap ditampilkan)
+                    const riskAmount = modal * RISK_PERCENT;
+                    result.riskAmount = `$${riskAmount.toFixed(2)}`;
+
+                } else {
+                    // KASUS: SL VALID
+                    result.isSlValid = true;
+                    result.limitExceeded = false;
+                    result.statusText = "OK";
+                    result.statusClass = "text-gray-700";
+
+                    // 3. Hitung TP (RR 1:2)
+                    const tpPoin = jarakPoin * RR_RATIO;
+                    let tpPrice = (tradeType === 'BUY') ? (entryPrice + tpPoin) : (entryPrice - tpPoin);
+                    result.tpPrice = tpPrice.toFixed(decimals);
+    
+                    // 4. Hitung Risk Amount ($)
+                    const riskAmount = modal * RISK_PERCENT;
+                    result.riskAmount = `$${riskAmount.toFixed(2)}`;
+                    
+                    // 5. Hitung Lot Size (HANYA jika SL valid)
+                    const lossPerLot = jarakPips * pipValuePerLot;
+                    const lotSize = (lossPerLot > 0) ? (riskAmount / lossPerLot) : 0;
+                    result.lotSize = `${lotSize.toFixed(2)} lots`;
+                    
+                    const potentialLoss = lotSize * lossPerLot; 
+                    const potentialProfit = potentialLoss * RR_RATIO;
+
+                    result.potentialLoss = `$${potentialLoss.toFixed(2)}`;
+                    result.potentialProfit = `$${potentialProfit.toFixed(2)}`;
+                    result.rawRisk = potentialLoss;
+                    result.rawReward = potentialProfit;
+                }
+                
+                return result;
+            }
+
+            // --- Fungsi Modal (BARU) ---
+            function showSlWarningModal(suggestedSl, maxPips, pair, decimals) {
+                slModalMessage.textContent = `Batas SL terlampaui. Batas maksimum untuk ${pair} adalah ${maxPips} pips.`;
+                slModalSuggestion.textContent = `${suggestedSl.toFixed(decimals)}`;
+                slWarningModal.classList.remove('hidden');
+            }
+
+            function hideSlWarningModal() {
+                slWarningModal.classList.add('hidden');
+            }
+            // --- Akhir Fungsi Modal ---
+
+            // --- (BARU) Handler untuk tombol Terapkan di Modal ---
+            function handleApplySuggestedSl() {
+                if (currentCalcData && typeof currentCalcData.suggestedSl !== 'undefined') {
+                    // 1. Terapkan nilai yang disarankan ke input SL
+                    slPriceInput.value = currentCalcData.suggestedSl.toFixed(currentCalcData.decimals);
+                    
+                    // 2. Tutup modal
+                    hideSlWarningModal();
+                    
+                    // 3. Panggil ulang kalkulasi utama untuk memperbarui seluruh UI
+                    //    (TP, Lot, Status, dll.)
+                    handleCalculation();
+                }
+            }
+
+            // --- (BARU) Handler HANYA untuk pop-up SL (saat 'change') ---
+            function handleSlPriceChange() {
+                const calc = calculateRiskData();
+                
+                // Logika Pop-up: Hanya jalankan saat input SL selesai (on change)
+                if (calc.limitExceeded) {
+                    showSlWarningModal(calc.suggestedSl, calc.maxPips, pairInput.value, calc.decimals);
+                } else {
+                    hideSlWarningModal(); // Otomatis tutup jika user memperbaiki inputnya
+                }
+            }
+
+            // --- Handler untuk Menampilkan Hasil Kalkulasi ---
+            function handleCalculation() {
+                const calc = calculateRiskData();
+                currentCalcData = calc; // Simpan data mentah
+
+                // Update UI
+                tpPriceDisplay.value = calc.tpPrice;
+                jarakSlDisplay.textContent = calc.jarakPips;
+                statusSlDisplay.textContent = calc.statusText;
+                statusSlDisplay.className = `block text-sm font-medium ${calc.statusClass}`;
+                riskAmountDisplay.textContent = calc.riskAmount;
+                lotSizeDisplay.textContent = calc.lotSize;
+                potentialLossDisplay.textContent = calc.potentialLoss;
+                potentialProfitDisplay.textContent = calc.potentialProfit;
+                btnSelesai.disabled = !calc.isSlValid;
+
+                // Logika Pop-up (DIHAPUS DARI SINI)
+                /* Logika pop-up dipindahkan ke handleSlPriceChange() 
+                agar hanya aktif saat 'change' (setelah user selesai input), 
+                bukan saat 'input' (setiap ketukan).
+                */
+            }
+
+            // --- Fungsi Tombol Selesai (Submit) ---
+            function handleSubmit(e) {
+                e.preventDefault();
+                
+                if (!currentCalcData.isSlValid) return; // Double check
+
+                const tradeData = {
+                    id: Date.now(),
+                    status: 'pending', // 'pending', 'win', 'loss'
+                    pair: pairInput.value,
+                    type: tradeTypeInput.value,
+                    entry: entryPriceInput.value,
+                    sl: slPriceInput.value,
+                    tp: tpPriceDisplay.value,
+                    lot: currentCalcData.lotSize,
+                    risk: currentCalcData.potentialLoss,
+                    reward: currentCalcData.potentialProfit,
+                    rawRisk: currentCalcData.rawRisk,
+                    rawReward: currentCalcData.rawReward,
+                    time: new Date().toLocaleString('id-ID', { hour12: false, dateStyle: 'short', timeStyle: 'short' })
+                };
+
+                // Tambahkan ke database & UI
+                tradeHistory.push(tradeData);
+                addTradeToHistoryUI(tradeData);
+                updateAnalytics();
+
+                // Reset form
+                form.reset();
+            }
+
+            // --- Fungsi Tambah ke History UI ---
+            function addTradeToHistoryUI(data) {
+                if (emptyHistoryMsg) {
+                    emptyHistoryMsg.style.display = 'none';
+                }
+
+                const typeColor = data.type === 'BUY' ? 'text-gray-900' : 'text-gray-600';
+                const typeArrow = data.type === 'BUY' ? '↑' : '↓';
+
+                const historyItem = `
+                    <div class="border border-gray-200 rounded-lg p-4 space-y-3" data-id="${data.id}">
+                        <!-- Info Utama -->
+                        <div>
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <span class="font-bold text-lg ${typeColor}">${data.type} ${typeArrow}</span>
+                                    <span class="font-semibold text-lg text-gray-900 ml-2">${data.pair}</span>
+                                </div>
+                                <span class="text-xs text-gray-500">${data.time}</span>
+                            </div>
+                            <div class="text-sm text-gray-700">
+                                <strong>Lot:</strong> ${data.lot} | 
+                                <span class="text-gray-600"><strong>Risk:</strong> ${data.risk}</span> | 
+                                <span class="text-gray-900"><strong>Reward:</strong> ${data.reward}</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Detail Harga -->
+                        <div class="text-xs text-gray-600 grid grid-cols-3 gap-1 pt-2 border-t">
+                            <span><strong>Entry:</strong> ${data.entry}</span>
+                            <span><strong>SL:</strong> ${data.sl}</span>
+                            <span><strong>TP:</strong> ${data.tp}</span>
+                        </div>
+                        
+                        <!-- Status Action (BARU) -->
+                        <div class="trade-status-pending pt-2 border-t">
+                            <span class="text-sm font-medium text-gray-700 mr-2">Tandai hasil:</span>
+                            <button class="btn-win text-xs font-medium bg-gray-200 text-gray-700 px-3 py-1 rounded-full hover:bg-gray-300 transition-colors">
+                                WIN
+                            </button>
+                            <button class="btn-loss text-xs font-medium bg-gray-200 text-gray-700 px-3 py-1 rounded-full hover:bg-gray-300 transition-colors ml-2">
+                                LOSS
+                            </button>
+                        </div>
+                        
+                        <!-- Status Hasil (Hidden by default) -->
+                        <div class="trade-status-closed hidden pt-2 border-t text-center">
+                            <!-- Status akan diisi oleh JS -->
+                        </div>
+                    </div>
+                `;
+                historyList.insertAdjacentHTML('afterbegin', historyItem);
+            }
+
+            // --- Fungsi Aksi di History (Win/Loss) ---
+            function handleHistoryAction(e) {
+                const target = e.target;
+                const tradeElement = target.closest('[data-id]');
+                if (!tradeElement) return;
+                
+                const tradeId = tradeElement.dataset.id;
+                let newStatus = null;
+
+                if (target.classList.contains('btn-win')) {
+                    newStatus = 'win';
+                } else if (target.classList.contains('btn-loss')) {
+                    newStatus = 'loss';
+                }
+
+                if (newStatus) {
+                    updateTradeStatus(tradeId, newStatus);
+                }
+            }
+
+            // --- Fungsi Update Status Trade ---
+            function updateTradeStatus(tradeId, newStatus) {
+                const tradeIndex = tradeHistory.findIndex(t => t.id == tradeId);
+                if (tradeIndex === -1) return;
+
+                // Update database
+                tradeHistory[tradeIndex].status = newStatus;
+
+                // Update UI Item
+                const item = historyList.querySelector(`[data-id="${tradeId}"]`);
+                item.querySelector('.trade-status-pending').classList.add('hidden');
+                
+                const statusDiv = item.querySelector('.trade-status-closed');
+                statusDiv.classList.remove('hidden');
+                
+                if (newStatus === 'win') {
+                    statusDiv.innerHTML = `<span class="text-sm font-bold bg-gray-800 text-white px-4 py-1 rounded-full">TRADE WIN</span>`;
+                } else {
+                    statusDiv.innerHTML = `<span class="text-sm font-bold bg-gray-600 text-white px-4 py-1 rounded-full">TRADE LOSS</span>`;
+                }
+
+                // Update Analisis
+                updateAnalytics();
+            }
+
+            // --- Fungsi Update Panel Analisis ---
+            function updateAnalytics() {
+                const totalTrades = tradeHistory.length;
+                const wins = tradeHistory.filter(t => t.status === 'win').length;
+                const losses = tradeHistory.filter(t => t.status === 'loss').length;
+                const totalClosed = wins + losses;
+
+                const winRate = (totalClosed > 0) ? (wins / totalClosed) * 100 : 0;
+                
+                const maxLoss = Math.max(0, ...tradeHistory.map(t => t.rawRisk));
+                const maxProfit = Math.max(0, ...tradeHistory.map(t => t.rawReward));
+
+                // Update UI Analisis
+                winRateDisplay.textContent = `${winRate.toFixed(1)}%`;
+                totalTradesDisplay.textContent = totalTrades;
+                winLossRatioDisplay.textContent = `${wins} / ${losses}`;
+                maxLossDisplay.textContent = `$${maxLoss.toFixed(2)}`;
+                maxProfitDisplay.textContent = `$${maxProfit.toFixed(2)}`;
+            }
+
+            // --- Fungsi Tombol Batal (Reset) ---
+            function handleReset() {
+                resetCalculationDisplays();
+                currentCalcData = {};
+                btnSelesai.disabled = true;
+            }
+
+            // --- Fungsi Reset Tampilan Kalkulasi ---
+            function resetCalculationDisplays() {
+                tpPriceDisplay.value = "";
+                jarakSlDisplay.textContent = "- pips";
+                statusSlDisplay.textContent = "OK";
+                statusSlDisplay.className = "block text-sm font-medium text-gray-700";
+                riskAmountDisplay.textContent = "$0.00";
+                lotSizeDisplay.textContent = "- lots";
+                potentialLossDisplay.textContent = "$0.00";
+                potentialProfitDisplay.textContent = "$0.00";
+                btnSelesai.disabled = true;
+            }
+
+            // Panggil sekali saat load untuk reset awal
+            resetCalculationDisplays();
+            updateAnalytics(); // Inisialisasi panel analisis
+        });
+    </script>
+
+</body>
+</html>
